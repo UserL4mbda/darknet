@@ -1,4 +1,5 @@
-FROM ubuntu:latest AS builder
+#FROM ubuntu:latest AS builder
+FROM ubuntu:latest
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -18,11 +19,11 @@ RUN rm docker-compose.yml
 
 RUN make
 
-FROM ubuntu:latest
+#FROM ubuntu:latest
 
-ENV DEBIAN_FRONTEND noninteractive
+#ENV DEBIAN_FRONTEND noninteractive
 
-RUN apt-get update -y
+#RUN apt-get update -y
 
 RUN apt-get install -y sudo libgomp1
 
@@ -34,14 +35,31 @@ RUN usermod --shell /bin/bash yolo
 
 RUN echo "yolo:yolo" | chpasswd
 
-COPY --from=builder /darknet /home/yolo/darknet
+#COPY --from=builder /darknet /home/yolo/darknet
+RUN cp -r  /darknet /home/yolo/darknet
 
 RUN cp /home/yolo/darknet/libdarknet.so /usr/local/lib/libdarknet.so || echo "libso not used"
 
 RUN cp /home/yolo/darknet/include/darknet.h /usr/local/include/darknet.h
 
+COPY ./yolov4.weights /home/yolo/darknet
+
 RUN ldconfig
 
 WORKDIR /home/yolo/darknet
+
+COPY ./detection.c /home/yolo/darknet/test_detector/
+COPY ./Detection_Makefile /home/yolo/darknet/test_detector/Makefile
+WORKDIR /home/yolo/darknet/test_detector
+RUN make
+RUN cp /home/yolo/darknet/test_detector/detect /home/yolo/darknet/
+
+# Sous windows11 il semble y avoir des problemes de droit en ecriture alors on change les droits
+RUN chown -R yolo:yolo /home/yolo
+
+WORKDIR /home/yolo/darknet
+
+#COPY ./test_detector_CMakeLists.txt /home/yolo/darknet/test_detector/CMakeLists.txt
+#RUN mkdir /home/yolo/darknet/test_detector/build
 
 USER yolo

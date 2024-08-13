@@ -1,0 +1,34 @@
+# Nom de l'exécutable final
+TARGET = yolo_test
+
+# Compilateur et options de compilation
+CC = gcc
+CFLAGS = -Wall -Wextra -O2 -I./darknet/include
+
+# Fichiers source et objets
+SRCS = yolo_test.c
+OBJS = $(SRCS:.c=.o)
+
+# Bibliothèques et répertoires d'inclusion
+LDFLAGS = -L./darknet -ldarknet -lm -pthread -lstdc++ -DOPENCV
+INCLUDES = -I./darknet/include
+
+# Cible par défaut
+all: $(TARGET)
+
+# Règle pour créer l'exécutable
+$(TARGET): $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) -o $@ $(LDFLAGS)
+
+# Règle pour compiler les fichiers .c en .o
+%.o: %.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+# Nettoyage des fichiers objets et de l'exécutable
+clean:
+	rm -f $(OBJS) $(TARGET)
+
+# Règle pour recompiler tout
+rebuild: clean all
+
+.PHONY: all clean rebuild

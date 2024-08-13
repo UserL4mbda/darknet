@@ -1,0 +1,52 @@
+cmake_minimum_required(VERSION 3.10)
+project(YoloExample C)
+
+set(CMAKE_C_STANDARD 11)
+
+# Définir le nom de l'exécutable
+set(EXECUTABLE_NAME yolo_example)
+
+# Définir les sources
+set(SOURCES
+    main.c
+)
+
+# Créer l'exécutable
+add_executable(${EXECUTABLE_NAME} ${SOURCES})
+
+# Trouver la bibliothèque Darknet
+find_library(DARKNET_LIBRARY
+    NAMES darknet
+    HINTS /usr/local/lib /usr/lib
+)
+
+if(NOT DARKNET_LIBRARY)
+    message(FATAL_ERROR "Darknet library not found")
+endif()
+
+# Trouver les en-têtes de Darknet
+find_path(DARKNET_INCLUDE_DIR
+    NAMES darknet.h
+    HINTS /usr/local/include /usr/include
+)
+
+if(NOT DARKNET_INCLUDE_DIR)
+    message(FATAL_ERROR "Darknet headers not found")
+endif()
+
+# Inclure les répertoires d'en-têtes
+include_directories(${DARKNET_INCLUDE_DIR})
+
+# Lier les bibliothèques
+target_link_libraries(${EXECUTABLE_NAME}
+    ${DARKNET_LIBRARY}
+    m  # Bibliothèque mathématique
+)
+
+# Copier les fichiers de configuration et de poids dans le répertoire de build
+configure_file(${CMAKE_SOURCE_DIR}/cfg/yolov4.cfg ${CMAKE_BINARY_DIR}/cfg/yolov4.cfg COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/cfg/coco.data ${CMAKE_BINARY_DIR}/cfg/coco.data COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/yolov4.weights ${CMAKE_BINARY_DIR}/yolov4.weights COPYONLY)
+
+# Copier l'image de test dans le répertoire de build
+configure_file(${CMAKE_SOURCE_DIR}/test.jpg ${CMAKE_BINARY_DIR}/test.jpg COPYONLY)

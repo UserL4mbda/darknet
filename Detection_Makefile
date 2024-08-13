@@ -1,0 +1,17 @@
+CC=gcc
+CFLAGS=-c -Wall -I/darknet/src
+LDFLAGS=-L. -ldarknet
+SOURCES=detection.c
+OBJECTS=$(SOURCES:.c=.o)
+EXECUTABLE=detect
+
+all: $(SOURCES) $(EXECUTABLE)
+
+$(EXECUTABLE): $(OBJECTS)
+	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
+
+.c.o:
+	$(CC) $(CFLAGS) $<
+
+clean:
+	rm -f *.o $(EXECUTABLE)
