@@ -11,6 +11,10 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    // Redirect stdout to /dev/null
+    freopen("/dev/null", "w", stdout);
+    freopen("/dev/null", "w", stderr);
+
     network *net = load_network("cfg/yolov4.cfg", "yolov4.weights", 0);
     set_batch_network(net, 1);
     //image im = load_image_color("data/dog.jpg", 0, 0);
@@ -21,6 +25,10 @@ int main(int argc, char **argv)
     int nboxes = 0;
     detection *dets = get_network_boxes(net, im.w, im.h, 0.5, 0.5, 0, 1, &nboxes, 0);
     do_nms_sort(dets, nboxes, l.classes, 0.4);
+
+    // Restore stdout
+    freopen("/dev/tty", "w", stdout);
+    freopen("/dev/tty", "w", stderr);
 
     list *options = read_data_cfg("cfg/coco.data");
     char *name_list = option_find_str(options, "names", "data/coco.names");
@@ -50,7 +58,8 @@ int main(int argc, char **argv)
             //printf("Width: %d, Height: %d\n\n", right - left, bottom - top);
             printf("  {\n");
             printf("    \"class\": \"%s\",\n", names[class_id]);
-            printf("    \"confidence\": %.2f%%,\n", prob*100);
+            //printf("    \"confidence\": %.2f%%,\n", prob*100);
+            printf("    \"confidence\": %.4f,\n", prob);
             printf("    \"x\": %.2f,\n", b.x);
             printf("    \"y\": %.2f,\n", b.y);
             printf("    \"width\": %.2f,\n", b.w);
